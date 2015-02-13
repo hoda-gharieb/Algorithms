@@ -1,0 +1,183 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+
+namespace Tr
+{
+    public class Trie
+    {
+        Boolean wordEnd;
+        Trie[] next;
+        static int INF = (int)1e9;
+
+        public Trie()
+        {
+            wordEnd = false;
+            next = new Trie[26];
+        }
+
+        // ============== add word to the Trie tree =================== //
+
+        public void addWord(String s)
+        {
+            addWord(s, 0);
+        }
+
+        private void addWord(String s, int index)
+        {
+            if (index == s.Length)
+                wordEnd = true;
+            else
+            {
+                int edge = s[index] - 'a';
+                if (next[edge] == null)
+                    next[edge] = new Trie();
+                next[edge].addWord(s, index + 1);
+            }
+        }
+
+        // ============== search for word in the tree ================ //
+
+        public Boolean search(String s)
+        {
+            return search(s, 0);
+        }
+
+        private Boolean search(String s, int index)
+        {
+            if (index == s.Length)
+                return wordEnd;
+            else
+            {
+                int edge = s[index] - 'a';
+                if (next[edge] == null)
+                    return false;
+                else
+                    return next[edge].search(s, index + 1);
+            }
+        }
+
+        // ======= count words strating with specific prefix ========= //
+
+        public int countWords(String s)
+        {
+            return countWords(s, 0);
+        }
+
+        private int countWords(String s, int index)
+        {
+            if (index < s.Length)
+            {
+                int edge = s[index] - 'a';
+                if (next[edge] == null)
+                    return 0;
+                else
+                    return next[edge].countWords(s, index + 1);
+            }
+            int ans = 0;
+            if (this.wordEnd)
+                ans++;
+            for (int i = 0; i < 26; i++)
+                if (next[i] != null)
+                    ans += next[i].countWords(s, index + 1);
+            return ans;
+        }
+
+        // ========== check the spelling of a string and allowing specific numbers of mistakes in the given string ========= //
+
+        public String spellCorrect(String s, int mistakes)
+        {
+            myPair res = spellCorrect(s, mistakes, 0);
+            if (res.get_score() >= 0)
+                return res.get_s();
+            else
+                return null;
+        }
+
+        private myPair spellCorrect(String s, int mistakes, int index)
+        {
+            if (mistakes < 0)
+                return new myPair("", -INF);
+            if (index == s.Length)
+                if (wordEnd)
+                    return new myPair("", mistakes);
+                else
+                    return new myPair("", -INF);
+            myPair best = new myPair("", -INF);
+
+            // insert
+            for (int i = 0; i < 26; i++)
+                if (next[i] != null)
+                {
+                    myPair temp = next[i].spellCorrect(s, mistakes - 1, index);
+                    if (temp.compareTo(best) > 0)
+                    {
+                        best = temp;
+                        best.set_s((char)(i + 'a') + best.get_s());
+                    }
+                }
+
+            // delete
+            myPair tempo = spellCorrect(s, mistakes - 1, index + 1);
+            if (tempo.compareTo(best) > 0)
+                best = tempo;
+
+            // edit
+            for (int i = 0; i < 26; i++)
+            {
+                if (next[i] != null)
+                {
+                    tempo = next[i].spellCorrect(s, mistakes - ( i == (s[index] - 'a') ? 0 : 1 ), index + 1);
+                    if (tempo.compareTo(best) > 0)
+                    {
+                        best = tempo;
+                        best.set_s((char)(i + 'a') + best.get_s());
+                    }
+                }
+            }
+            return best;
+        }
+    }
+
+    public class myPair
+    {
+        String s;
+        int score;
+
+        public myPair(String s, int score)
+        {
+            this.s = s;
+            this.score = score;
+        }
+
+        public void set_s(String S)
+        {
+            this.s = S;
+        }
+
+        public void set_score(int Score)
+        {
+            this.score = Score;
+        }
+
+        public String get_s()
+        {
+            return this.s;
+        }
+
+        public int get_score()
+        {
+            return this.score;
+        }
+
+        public int compareTo( myPair o)
+        {
+            return score - o.score;
+        }
+    }
+
+ 
+}
+
+
