@@ -62,7 +62,7 @@ struct Node
 
 bool operator<(const Node & a, const Node & b)
 {
-  return a.priority > b.priority;
+  return a.priority > b.priority; //the greater the priority the less desirable is the node to be added
 }
 
 string A_star ( const int& xStart, const int& yStart, const int& xGoal, const int& yGoal )
