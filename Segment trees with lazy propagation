@@ -1,0 +1,95 @@
+#include <bits/stdc++.h>
+
+using namespace std;
+
+
+#define Set(a, s) memset(a, s, sizeof (a))
+#define rep(i, x, y) for(int i = x; i < y; i++)
+#define Rep(i, x, y) for(int i = x; i <= y; i++)
+#define vi vector<int>
+#define vvi vector<vector<int> >
+#define vp vector< pair< int, int > >
+#define point pair<double, double >
+#define pb push_back
+#define mp make_pair
+#define eps pow(10.0,-9.0)
+#define MOD 1000000007
+#define oo 1e18
+#define Maxi 250000
+
+typedef unsigned long long ull;
+typedef long long ll;
+
+int a[100005];
+ll lazy[800005], tr[800005];
+
+void lazyUpdate(int nod, int l, int r)
+{
+    if( lazy[nod] )
+    {
+        ll childs = (r-l+1);
+        tr[nod] += (lazy[nod] * childs );
+
+        if( l != r )
+        {
+            lazy[nod*2] += lazy[nod];
+            lazy[nod*2 + 1 ] += lazy[nod];
+        }
+
+        lazy[nod] = 0;
+    }
+}
+
+void updateTL(int nod, int l, int r, int i, int j, int val)
+{
+    lazyUpdate(nod, l, r);
+
+    if( l > r || l > j || i > r )
+        return;
+
+    if( l >= i && r <= j )
+    {
+        lazy[nod] += val;
+        lazyUpdate(nod, l, r);
+        return;
+    }
+
+    updateTL(nod*2, l, (l+r)/2, i, j, val);
+    updateTL(nod*2 + 1, (l+r)/2 + 1, r, i, j, val);
+
+    tr[nod] = tr[nod*2] + tr[nod*2 + 1]; // in case max tree : max(tr[nod*2], tr[nod*2 + 1])
+}
+
+ll queryTL(int nod, int l, int r, int i, int j)
+{
+    if( l > r || l > j || i > r )
+        return 0; // max tree : -Inf , min tree : Inf
+    lazyUpdate(nod, l, r);
+
+    if( l >= i && r <= j )
+        return tr[nod];
+
+    ll q1 = queryTL(nod*2, l, (l+r)/2, i, j);
+    ll q2 = queryTL(nod*2 + 1, (l+r)/2 +1, r, i, j);
+
+    return q1+q2; // in case max tree : max(q1, q2)
+
+}
+
+int main()
+{
+    rep( i, 1, n+1)
+    {
+        cin>>a[i];
+        updateTL(1, 1, 200000, a[i]+1, a[i]+m, 1);
+    }
+        int x, y;
+        cin>>x>>y;
+        updateTL(1, 1, 200000, a[x]+1, a[x]+m, -1);
+        a[x] = y;
+        updateTL(1, 1, 200000, a[x]+1, a[x]+m, 1);
+        cin>>x>>y;
+        cout<<queryTL(1, 1, 200000, x,y)<<endl;
+    }
+    return 0;
+}
